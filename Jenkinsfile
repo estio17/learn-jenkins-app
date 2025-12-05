@@ -30,10 +30,23 @@ pipeline {
             }
             steps {
                 sh ''' 
+                    echo "Running tests..."
                     test -f build/index.html
                     npm test
                 '''
             }
+        }
+    }
+
+    post {
+        always {
+            junit 'test-results/junit.xml'
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed.'
         }
     }
 }
