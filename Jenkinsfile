@@ -62,11 +62,5 @@ pipeline {
         always {
             junit 'jest-results/junit.xml'
         }
-        success {
-            echo 'Pipeline succeeded!'
-        }
-        failure {
-            echo 'Pipeline failed.'
-        }
     }
 }
