@@ -69,7 +69,7 @@ pipeline {
                     }
                     post {
                         always {
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Local', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Local E2E', reportTitles: '', useWrapperFileDirectly: true])
                         }
                     }
                 }
@@ -131,25 +131,7 @@ pipeline {
             }
         }
 
-        stage('Deploy Production') {
-            agent {
-                docker {
-                    image 'node:20.19-bookworm'
-                    reuseNode true
-                }
-            }
-            steps {
-                sh '''
-                    npm install netlify-cli node
-                    node_modules/.bin/netlify --version
-                    echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
-                    node_modules/.bin/netlify status
-                '''
-                // node_modules/.bin/netlify deploy --dir=build --prod
-            }
-        }
-
-        stage('Prod E2E Tests') {
+        stage('Deploy Production and E2E Tests') {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
@@ -163,9 +145,16 @@ pipeline {
 
             steps {
                 sh ''' 
+                    node --version
+                    npm install netlify-cli
+                    node_modules/.bin/netlify --version
+                    echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
+                    node_modules/.bin/netlify status
+
                     echo "Running E2E Production tests..."
                     npx playwright test --reporter=html
                 '''
+                // node_modules/.bin/netlify deploy --dir=build --prod
             }
             post {
                 always {
