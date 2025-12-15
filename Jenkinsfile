@@ -87,7 +87,7 @@ pipeline {
         stage('Deploy Staging and E2E Tests') {
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    image 'my-playwright'
                     reuseNode true
                 }
             }
@@ -98,12 +98,11 @@ pipeline {
 
             steps {
                 sh ''' 
-                    npm install netlify-cli node-jq
-                    node_modules/.bin/netlify --version
+                    netlify --version
                     echo "Deploying to staging. Site ID: $NETLIFY_SITE_ID"
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build --json > deploy-output.json
-                    CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json)
+                    netlify status
+                    netlify deploy --dir=build --json > deploy-output.json
+                    CI_ENVIRONMENT_URL=$(node-jq -r '.deploy_url' deploy-output.json)
                     echo "Running E2E Staging tests..."
                     npx playwright test --reporter=html
                 '''
@@ -118,7 +117,7 @@ pipeline {
         stage('Deploy Production and E2E Tests') {
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    image 'my-playwright'
                     reuseNode true
                 }
             }
@@ -130,10 +129,9 @@ pipeline {
             steps {
                 sh ''' 
                     node --version
-                    npm install netlify-cli
-                    node_modules/.bin/netlify --version
+                    netlify --version
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
-                    node_modules/.bin/netlify status
+                    netlify status
 
                     echo "Running E2E Production tests..."
                     npx playwright test --reporter=html
