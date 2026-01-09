@@ -123,7 +123,6 @@ pipeline {
                     node --version
                     netlify --version
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
-                    netlify deploy --dir=build --prod
                     netlify status
 
                     echo "Running E2E Production tests..."
