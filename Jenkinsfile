@@ -106,7 +106,7 @@ pipeline {
             }
         }
 
-        stage('Deploy Production and E2E Tests') {
+        stage('Deploy Production and E2E Tests TEST') {
             agent {
                 docker {
                     image 'my-playwright'
