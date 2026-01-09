@@ -9,7 +9,7 @@ pipeline {
 
     stages {
         // Build stage using Node.js Docker image
-        stage('Build') {
+        stage('Build Stage') {
             agent {
                 docker {
                     image 'node:18-alpine'
