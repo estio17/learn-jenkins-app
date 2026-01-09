@@ -123,13 +123,13 @@ pipeline {
                     node --version
                     netlify --version
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
-                    node_modules/.bin/netlify deploy --dir=build --prod
+                    netlify deploy --dir=build --prod
                     netlify status
 
                     echo "Running E2E Production tests..."
                     npx playwright test --reporter=html
                 '''
-                // node_modules/.bin/netlify deploy --dir=build --prod
+                // netlify deploy --dir=build --prod
             }
             post {
                 always {
