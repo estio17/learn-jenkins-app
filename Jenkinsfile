@@ -10,29 +10,6 @@ pipeline {
 
     stages {
 
-        stage('AWS') {
-            agent {
-                docker {
-                    image 'amazon/aws-cli'
-                    args "--entrypoint=''"
-                }
-            }
-
-            environment {
-                AWS_S3_BUCKET_NAME = 'learn-jenkins-estio'
-            }
-
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'my-aws-s3-key', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                    sh ''' 
-                        aws --version
-                        echo "Hello AWS S3!" > index.html
-                        aws s3 cp index.html s3://$AWS_S3_BUCKET_NAME/index.html
-                    '''
-                }
-            }
-        }
-
         // Build stage using Node.js Docker image
         stage('Build') {
             agent {
@@ -149,7 +126,7 @@ pipeline {
                     netlify --version
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
                     netlify status
-
+                    netlify deploy --dir=build --prod
                     echo "Running E2E Production tests..."
                     npx playwright test --reporter=html
                 '''
@@ -158,6 +135,29 @@ pipeline {
             post {
                 always {
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright E2E Production', reportTitles: '', useWrapperFileDirectly: true])
+                }
+            }
+        }
+
+                stage('AWS') {
+            agent {
+                docker {
+                    image 'amazon/aws-cli'
+                    reuseNode true
+                    args "--entrypoint=''"
+                }
+            }
+
+            environment {
+                AWS_S3_BUCKET_NAME = 'learn-jenkins-estio'
+            }
+
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'my-aws-s3-key', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+                    sh ''' 
+                        aws --version
+                        aws s3 sync build s3://$AWS_S3_BUCKET_NAME
+                    '''
                 }
             }
         }
