@@ -3,10 +3,12 @@ pipeline {
     
     environment {
         REACT_APP_VERSION="1.2.$BUILD_ID"
+        APP_NAME="learnjenkinsapp"
         AWS_DEFAULT_REGION="us-east-1"
         ECS_CLUSTER_NAME="Jenkins-App-Cluster-Prod"
         ECS_SERVICE_NAME="learn-jenkins-app-prod-service"
         ECS_TASK_DEFINITION_NAME="learn-jenkins-app-prod-taskDef"
+        ECS_DOCKER_REGISTRY_URL="091113170535.dkr.ecr.us-east-1.amazonaws.com"
         
     }
 
@@ -42,9 +44,13 @@ pipeline {
             }
 
             steps {
-                sh '''
-                    docker build -t myjenkinsapp .
-                '''
+                withCredentials([usernamePassword(credentialsId: 'my-aws-s3-key', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+                    sh '''
+                        docker build -t $ECS_DOCKER_REGISTRY_URL/$APP_NAME:$REACT_APP_VERSION .
+                        aws ecr get-login-password | docker login --username AWS --password-stdin $ECS_DOCKER_REGISTRY_URL
+                        docker push $ECS_DOCKER_REGISTRY_URL/$APP_NAME:$REACT_APP_VERSION
+                    '''
+                }
             }
         }
 
