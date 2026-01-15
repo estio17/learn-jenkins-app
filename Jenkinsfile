@@ -34,19 +34,18 @@ pipeline {
                 docker {
                     image 'amazon/aws-cli'
                     reuseNode true
-                    args "--entrypoint=''"
+                    args "-u root --entrypoint=''"
                 }
-            }
-
-            environment {
-                AWS_S3_BUCKET_NAME = 'learn-jenkins-estio'
             }
 
             steps {
                 withCredentials([usernamePassword(credentialsId: 'my-aws-s3-key', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh ''' 
                         aws --version
-                        aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json
+                        yum install jq -y
+                        LATEST_JENKINS_APP_TASK_DEF_REVISION=$(aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json | jq '.taskDefinition.revision')
+                        echo $LATEST_JENKINS_APP_TASK_DEF_REVISION
+                        aws ecs update-service --cluster Jenkins-App-Cluster-Prod --service learn-jenkins-app-prod-service --task-definition learn-jenkins-app-prod-taskDef:$LATEST_JENKINS_APP_TASK_DEF_REVISION
                     '''
                 }
             }
