@@ -14,7 +14,7 @@ pipeline {
 
     stages {
 
-        // Build stage using Node.js Docker image
+        // Build stage using Node.js Docker image 
         stage('Build') {
             agent {
                 docker {
